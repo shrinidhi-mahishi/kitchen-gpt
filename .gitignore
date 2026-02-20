@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+*.egg
+
+# Environment / secrets
+.env
+*.env.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Flutter / Dart
+frontend/kitchengpt/.dart_tool/
+frontend/kitchengpt/build/
+frontend/kitchengpt/.flutter-plugins
+frontend/kitchengpt/.flutter-plugins-dependencies
+frontend/kitchengpt/.packages
+frontend/kitchengpt/pubspec.lock
+frontend/kitchengpt/android/.gradle/
+frontend/kitchengpt/android/local.properties
+frontend/kitchengpt/android/app/debug/
+frontend/kitchengpt/android/app/profile/
+frontend/kitchengpt/android/app/release/
+frontend/kitchengpt/ios/Pods/
+frontend/kitchengpt/ios/.symlinks/
+
+# Misc
+*.log
+tmp/
