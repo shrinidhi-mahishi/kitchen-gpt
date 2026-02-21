@@ -8,7 +8,13 @@ venv/
 
 # Environment / secrets
 .env
+!frontend/kitchengpt/assets/.env
 *.env.local
+
+# Android signing
+*.jks
+*.keystore
+**/key.properties
 
 # IDE
 .idea/
