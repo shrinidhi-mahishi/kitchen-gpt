@@ -7,7 +7,6 @@ import '../models/restaurant.dart';
 import '../models/youtube_video.dart';
 import '../services/api_service.dart';
 import '../services/camera_service.dart';
-import '../widgets/map_view.dart';
 import '../widgets/recipe_card.dart';
 import '../widgets/restaurant_card.dart';
 import '../widgets/youtube_card.dart';
@@ -336,12 +335,6 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                     Text('Nearby Restaurants',
                         style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
-                    RestaurantMapView(
-                      restaurants: _restaurants,
-                      userLatitude: _lat!,
-                      userLongitude: _lng!,
-                    ),
-                    const SizedBox(height: 12),
                     ..._restaurants
                         .map((r) => RestaurantCard(restaurant: r)),
                   ],

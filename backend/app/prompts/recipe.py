@@ -1,4 +1,4 @@
-"""System prompt and schema for Gemini recipe generation."""
+"""System prompt and schema for OpenAI recipe generation."""
 
 RECIPE_SYSTEM_PROMPT = """You are an expert Indian home cook and recipe developer \
 with deep knowledge of regional Indian cuisines — North Indian, South Indian, \
@@ -26,43 +26,60 @@ Rules:
    international recipe, but the majority should be Indian.
 """
 
-RECIPE_RESPONSE_SCHEMA = {
-    "type": "array",
-    "items": {
-        "type": "object",
-        "properties": {
-            "title": {"type": "string"},
-            "ready_in_minutes": {"type": "integer"},
-            "servings": {"type": "integer"},
-            "summary": {"type": "string"},
-            "ingredients_used": {
-                "type": "array",
-                "items": {"type": "string"},
-            },
-            "ingredients_extra": {
-                "type": "array",
-                "items": {"type": "string"},
-                "description": "Indian pantry staples or minor additions not in the original list",
-            },
-            "steps": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "number": {"type": "integer"},
-                        "step": {"type": "string"},
+RECIPE_RESPONSE_FORMAT = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "recipe_list",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "recipes": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "title": {"type": "string"},
+                            "ready_in_minutes": {"type": "integer"},
+                            "servings": {"type": "integer"},
+                            "summary": {"type": "string"},
+                            "ingredients_used": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                            },
+                            "ingredients_extra": {
+                                "type": "array",
+                                "items": {"type": "string"},
+                                "description": "Indian pantry staples or minor additions not in the original list",
+                            },
+                            "steps": {
+                                "type": "array",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "number": {"type": "integer"},
+                                        "step": {"type": "string"},
+                                    },
+                                    "required": ["number", "step"],
+                                    "additionalProperties": False,
+                                },
+                            },
+                        },
+                        "required": [
+                            "title",
+                            "ready_in_minutes",
+                            "servings",
+                            "summary",
+                            "ingredients_used",
+                            "ingredients_extra",
+                            "steps",
+                        ],
+                        "additionalProperties": False,
                     },
-                    "required": ["number", "step"],
                 },
             },
+            "required": ["recipes"],
+            "additionalProperties": False,
         },
-        "required": [
-            "title",
-            "ready_in_minutes",
-            "servings",
-            "summary",
-            "ingredients_used",
-            "steps",
-        ],
     },
 }

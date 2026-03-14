@@ -8,9 +8,12 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """All configuration is read from environment variables / .env file."""
 
-    # --- Google API (Gemini + Places share one key) ---
+    # --- Google API (Places + YouTube) ---
     google_api_key: str
-    model_name: str = "gemini-2.5-pro"
+
+    # --- OpenAI API (Vision + Recipe generation) ---
+    openai_api_key: str
+    model_name: str = "gpt-5-mini-2025-08-07"
 
     # --- Supabase ---
     supabase_url: str

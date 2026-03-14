@@ -1,4 +1,4 @@
-"""System prompt and schema used by the Gemini vision service."""
+"""System prompt and schema used by the OpenAI vision service."""
 
 VISION_SYSTEM_PROMPT = """You are a professional food analyst specializing in \
 Indian cuisine, with deep knowledge of regional Indian dishes, ingredients, \
@@ -24,7 +24,8 @@ Analyze the provided food image and return structured data with these fields:
 5. **cuisine_type** — The cuisine category. For Indian dishes, be specific \
    about the regional style (e.g. "South Indian", "North Indian", \
    "Bengali", "Mughlai", "Rajasthani", "Street Food"). \
-   For non-Indian dishes use the country (e.g. "Italian", "Japanese").
+   For non-Indian dishes use the country (e.g. "Italian", "Japanese"). \
+   Use an empty string if uncertain.
 
 Guidelines:
 - If the image contains multiple dishes, focus on the primary/largest one.
@@ -33,24 +34,31 @@ Guidelines:
 - Default to Indian cuisine interpretation when a dish could be from multiple cuisines.
 """
 
-# Schema passed to Gemini's response_schema for guaranteed JSON output.
-# This mirrors the FoodAnalysisResponse Pydantic model.
-VISION_RESPONSE_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "dish_name": {"type": "string"},
-        "detected_ingredients": {
-            "type": "array",
-            "items": {"type": "string"},
+VISION_RESPONSE_FORMAT = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "food_analysis",
+        "strict": True,
+        "schema": {
+            "type": "object",
+            "properties": {
+                "dish_name": {"type": "string"},
+                "detected_ingredients": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+                "calories_estimate": {"type": "integer"},
+                "confidence": {"type": "number"},
+                "cuisine_type": {"type": "string"},
+            },
+            "required": [
+                "dish_name",
+                "detected_ingredients",
+                "calories_estimate",
+                "confidence",
+                "cuisine_type",
+            ],
+            "additionalProperties": False,
         },
-        "calories_estimate": {"type": "integer"},
-        "confidence": {"type": "number"},
-        "cuisine_type": {"type": "string", "nullable": True},
     },
-    "required": [
-        "dish_name",
-        "detected_ingredients",
-        "calories_estimate",
-        "confidence",
-    ],
 }

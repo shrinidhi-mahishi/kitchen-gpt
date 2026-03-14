@@ -83,7 +83,7 @@ async def recipes_by_ingredients(
         recipes = await recipe.generate_recipes(body.ingredients)
     except Exception as exc:
         logger.exception("Recipe generation failed")
-        raise HTTPException(status_code=502, detail=f"Gemini recipe error: {exc}")
+        raise HTTPException(status_code=502, detail=f"Recipe generation error: {exc}")
 
     # Use first recipe title as YouTube query
     dish_query = recipes[0].title if recipes else ", ".join(body.ingredients)
