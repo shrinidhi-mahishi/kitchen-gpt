@@ -25,6 +25,19 @@ router = APIRouter()
 ALLOWED_MIME_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic"}
 
 
+def _detect_mime(data: bytes) -> str | None:
+    """Detect image MIME type from file magic bytes."""
+    if data[:3] == b'\xff\xd8\xff':
+        return "image/jpeg"
+    if data[:8] == b'\x89PNG\r\n\x1a\n':
+        return "image/png"
+    if data[:4] == b'RIFF' and data[8:12] == b'WEBP':
+        return "image/webp"
+    if data[4:12] in (b'ftypheic', b'ftypmif1', b'ftyphevc'):
+        return "image/heic"
+    return None
+
+
 # --------------------------------------------------------------------------- #
 #  POST /analyze-dish  — Upload image → vision + recipes + YouTube
 # --------------------------------------------------------------------------- #
@@ -37,16 +50,13 @@ async def analyze_dish(
 
     Accepts JPEG, PNG, WebP, or HEIC images via multipart/form-data.
     """
-    content_type = image.content_type or "image/jpeg"
-    if content_type not in ALLOWED_MIME_TYPES:
-        raise HTTPException(
-            status_code=415,
-            detail=f"Unsupported image type: {content_type}. Use JPEG, PNG, WebP, or HEIC.",
-        )
-
     image_bytes = await image.read()
     if len(image_bytes) == 0:
         raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+
+    content_type = image.content_type or ""
+    if content_type not in ALLOWED_MIME_TYPES:
+        content_type = _detect_mime(image_bytes) or "image/jpeg"
 
     # Step 1: Vision — identify dish
     try:
