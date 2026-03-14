@@ -282,16 +282,7 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                     Text('Matching Recipes',
                         style: theme.textTheme.titleMedium),
                     const SizedBox(height: 8),
-                    SizedBox(
-                      height: 380,
-                      child: ListView.separated(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _recipes.length,
-                        separatorBuilder: (_, __) => const SizedBox(width: 12),
-                        itemBuilder: (_, i) =>
-                            RecipeCard(recipe: _recipes[i]),
-                      ),
-                    ),
+                    ..._recipes.map((r) => RecipeCard(recipe: r)),
                   ],
 
                   // YouTube videos
