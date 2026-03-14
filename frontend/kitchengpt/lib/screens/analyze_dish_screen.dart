@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 
 import '../models/food_analysis.dart';
 import '../models/recipe.dart';
+import '../models/restaurant.dart';
 import '../models/youtube_video.dart';
 import '../services/api_service.dart';
 import '../services/camera_service.dart';
 import '../widgets/recipe_card.dart';
+import '../widgets/restaurant_card.dart';
 import '../widgets/youtube_card.dart';
 
 class AnalyzeDishScreen extends StatefulWidget {
@@ -23,11 +26,16 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
   final _apiService = ApiService();
 
   bool _loading = false;
+  bool _loadingRestaurants = false;
   String? _error;
 
   FoodAnalysis? _analysis;
   List<Recipe> _recipes = [];
   List<YouTubeVideo> _youtubeVideos = [];
+  List<Restaurant> _restaurants = [];
+
+  double? _lat;
+  double? _lng;
 
   @override
   void initState() {
@@ -42,8 +50,25 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
       _analysis = null;
       _recipes = [];
       _youtubeVideos = [];
+      _restaurants = [];
       _error = null;
     });
+  }
+
+  Future<void> _ensureLocation() async {
+    if (_lat != null && _lng != null) return;
+    try {
+      final permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition(
+          locationSettings:
+              const LocationSettings(accuracy: LocationAccuracy.medium));
+      _lat = pos.latitude;
+      _lng = pos.longitude;
+    } catch (_) {}
   }
 
   Future<void> _onCapturePhoto() async {
@@ -61,6 +86,7 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
       _loading = true;
       _error = null;
       _youtubeVideos = [];
+      _restaurants = [];
     });
 
     try {
@@ -90,6 +116,7 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
       _error = null;
       _analysis = null;
       _youtubeVideos = [];
+      _restaurants = [];
     });
 
     try {
@@ -104,6 +131,34 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
     } finally {
       setState(() => _loading = false);
     }
+  }
+
+  Future<void> _onFindRestaurants(String dishName) async {
+    setState(() {
+      _loadingRestaurants = true;
+      _error = null;
+    });
+
+    await _ensureLocation();
+
+    try {
+      final results = await _apiService.nearbyRestaurants(
+        dishName: dishName,
+        latitude: _lat,
+        longitude: _lng,
+      );
+      setState(() => _restaurants = results);
+    } catch (e) {
+      setState(() => _error = 'Restaurant search failed: $e');
+    } finally {
+      setState(() => _loadingRestaurants = false);
+    }
+  }
+
+  String? get _dishNameForGeo {
+    if (_analysis != null) return _analysis!.dishName;
+    if (_recipes.isNotEmpty) return _recipes.first.title;
+    return null;
   }
 
   @override
@@ -238,6 +293,29 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                             YouTubeVideoCard(video: _youtubeVideos[i]),
                       ),
                     ),
+                  ],
+
+                  if (_recipes.isNotEmpty && _restaurants.isEmpty) ...[
+                    const SizedBox(height: 20),
+                    Center(
+                      child: _loadingRestaurants
+                          ? const CircularProgressIndicator()
+                          : OutlinedButton.icon(
+                              onPressed: _dishNameForGeo != null
+                                  ? () => _onFindRestaurants(_dishNameForGeo!)
+                                  : null,
+                              icon: const Icon(Icons.location_on),
+                              label: const Text('Find Nearby Restaurants'),
+                            ),
+                    ),
+                  ],
+
+                  if (_restaurants.isNotEmpty) ...[
+                    const SizedBox(height: 20),
+                    Text('Nearby Restaurants',
+                        style: theme.textTheme.titleMedium),
+                    const SizedBox(height: 8),
+                    ..._restaurants.map((r) => RestaurantCard(restaurant: r)),
                   ],
                 ],
               ),
