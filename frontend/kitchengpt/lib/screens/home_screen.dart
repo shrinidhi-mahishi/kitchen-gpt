@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../services/auth_service.dart';
 import 'analyze_dish_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,7 +7,6 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthService>();
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -21,14 +18,6 @@ class HomeScreen extends StatelessWidget {
             const Text('KitchenGPT'),
           ],
         ),
-        actions: [
-          if (auth.isAuthenticated)
-            IconButton(
-              icon: const Icon(Icons.logout),
-              tooltip: 'Sign out',
-              onPressed: () => auth.signOut(),
-            ),
-        ],
       ),
       body: const AnalyzeDishScreen(),
     );
