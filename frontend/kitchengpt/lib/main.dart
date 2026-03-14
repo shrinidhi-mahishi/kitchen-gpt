@@ -6,7 +6,11 @@ import 'app.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: 'assets/.env');
+  try {
+    await dotenv.load(fileName: 'assets/.env');
+  } catch (e) {
+    debugPrint('dotenv load failed: $e');
+  }
 
   runApp(const KitchenGPTApp());
 }
