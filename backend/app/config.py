@@ -8,8 +8,8 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     """All configuration is read from environment variables / .env file."""
 
-    # --- Google API (Places + YouTube) ---
-    google_api_key: str
+    # --- Google API (Places + YouTube) — optional, needed only for restaurant/YouTube features ---
+    google_api_key: str = ""
 
     # --- OpenAI API (Vision + Recipe generation) ---
     openai_api_key: str
