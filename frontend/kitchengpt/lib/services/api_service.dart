@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 
 import '../config/constants.dart';
 import '../models/food_analysis.dart';
@@ -72,7 +73,18 @@ class ApiService {
       'POST',
       Uri.parse('$_baseUrl/analyze-dish'),
     );
-    request.files.add(await http.MultipartFile.fromPath('image', imagePath));
+    final ext = imagePath.split('.').last.toLowerCase();
+    final mimeType = switch (ext) {
+      'png' => 'image/png',
+      'webp' => 'image/webp',
+      'heic' || 'heif' => 'image/heic',
+      _ => 'image/jpeg',
+    };
+    request.files.add(await http.MultipartFile.fromPath(
+      'image',
+      imagePath,
+      contentType: MediaType.parse(mimeType),
+    ));
 
     final streamed = await request.send();
     final responseBody = await streamed.stream.bytesToString();
