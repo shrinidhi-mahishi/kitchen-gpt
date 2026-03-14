@@ -10,9 +10,7 @@ class YouTubeVideoCard extends StatelessWidget {
 
   Future<void> _openVideo() async {
     final uri = Uri.parse(video.videoUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
 
   @override
