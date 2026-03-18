@@ -14,8 +14,16 @@ class HomeScreen extends StatefulWidget {
 class HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
 
-  void switchTab(int index) {
-    setState(() => _currentIndex = index);
+  final _cookKey = GlobalKey<AnalyzeDishScreenState>();
+
+  void _goToCookCamera() {
+    setState(() => _currentIndex = 1);
+    _cookKey.currentState?.selectTab(0);
+  }
+
+  void _goToCookIngredients() {
+    setState(() => _currentIndex = 1);
+    _cookKey.currentState?.selectTab(1);
   }
 
   @override
@@ -23,8 +31,11 @@ class HomeScreenState extends State<HomeScreen> {
     final theme = Theme.of(context);
 
     final pages = [
-      DiscoverScreen(onNavigateToCook: () => switchTab(1)),
-      const AnalyzeDishScreen(),
+      DiscoverScreen(
+        onScanDish: _goToCookCamera,
+        onByIngredients: _goToCookIngredients,
+      ),
+      AnalyzeDishScreen(key: _cookKey),
       const NearbyScreen(),
     ];
 

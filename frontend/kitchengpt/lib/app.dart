@@ -7,7 +7,7 @@ import 'screens/onboarding_screen.dart';
 class KitchenGPTApp extends StatelessWidget {
   const KitchenGPTApp({super.key});
 
-  static const _saffron = Color(0xFFE65100);
+  static const _brandColor = Color(0xFFFF6D00);
 
   Future<bool> _isOnboardingComplete() async {
     final prefs = await SharedPreferences.getInstance();
@@ -20,12 +20,12 @@ class KitchenGPTApp extends StatelessWidget {
       title: 'KitchenGPT',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: _saffron,
+        colorSchemeSeed: _brandColor,
         useMaterial3: true,
         brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
-        colorSchemeSeed: _saffron,
+        colorSchemeSeed: _brandColor,
         useMaterial3: true,
         brightness: Brightness.dark,
       ),

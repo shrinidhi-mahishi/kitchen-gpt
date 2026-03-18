@@ -1,22 +1,16 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 
 class DiscoverScreen extends StatelessWidget {
-  final VoidCallback onNavigateToCook;
+  final VoidCallback onScanDish;
+  final VoidCallback onByIngredients;
 
-  const DiscoverScreen({super.key, required this.onNavigateToCook});
-
-  static const _cuisines = [
-    ('North Indian', Icons.lunch_dining),
-    ('South Indian', Icons.rice_bowl),
-    ('Bengali', Icons.set_meal),
-    ('Street Food', Icons.fastfood),
-    ('Mughlai', Icons.dinner_dining),
-    ('Gujarati', Icons.brunch_dining),
-    ('Maharashtrian', Icons.ramen_dining),
-    ('Kerala', Icons.soup_kitchen),
-    ('Rajasthani', Icons.bakery_dining),
-    ('Hyderabadi', Icons.kebab_dining),
-  ];
+  const DiscoverScreen({
+    super.key,
+    required this.onScanDish,
+    required this.onByIngredients,
+  });
 
   static const _tips = [
     'Add a pinch of sugar to balance acidity in tomato-based gravies.',
@@ -25,12 +19,18 @@ class DiscoverScreen extends StatelessWidget {
     'Always heat the pan before adding oil to prevent food from sticking.',
     'Add a bay leaf to your dal while cooking for a subtle earthy flavour.',
     'Use yogurt-based marinades to tenderize chicken in under 30 minutes.',
+    'Toast whole spices in dry pan before grinding for deeper flavour.',
+    'Add ginger-garlic paste after onions turn golden, not before.',
+    'Rest roti dough for 15-20 min for softer, pliable rotis.',
+    'Temper mustard seeds on medium heat — high heat burns them.',
+    'Sour curd makes the best marinade for tandoori-style dishes.',
+    'A splash of cream or butter at the end enriches any curry.',
   ];
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tipIndex = DateTime.now().day % _tips.length;
+    final tipIndex = Random().nextInt(_tips.length);
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -53,8 +53,8 @@ class DiscoverScreen extends StatelessWidget {
                   icon: Icons.camera_alt_rounded,
                   title: 'Scan a Dish',
                   subtitle: 'Identify from photo',
-                  color: const Color(0xFFE65100),
-                  onTap: onNavigateToCook,
+                  color: const Color(0xFFFF6D00),
+                  onTap: onScanDish,
                 ),
               ),
               const SizedBox(width: 12),
@@ -63,39 +63,18 @@ class DiscoverScreen extends StatelessWidget {
                   icon: Icons.search_rounded,
                   title: 'By Ingredients',
                   subtitle: 'Search with what you have',
-                  color: const Color(0xFFC62828),
-                  onTap: onNavigateToCook,
+                  color: const Color(0xFFD50000),
+                  onTap: onByIngredients,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 32),
 
-          Text(
-            'Popular Cuisines',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 100,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _cuisines.length,
-              separatorBuilder: (_, __) => const SizedBox(width: 12),
-              itemBuilder: (context, i) {
-                final (name, icon) = _cuisines[i];
-                return _CuisineChip(name: name, icon: icon);
-              },
-            ),
-          ),
-          const SizedBox(height: 32),
-
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.4),
+              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Row(
@@ -173,7 +152,7 @@ class _QuickActionCard extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: color.withValues(alpha: 0.08),
-          border: Border.all(color: color.withValues(alpha: 0.2)),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,40 +182,6 @@ class _QuickActionCard extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _CuisineChip extends StatelessWidget {
-  final String name;
-  final IconData icon;
-
-  const _CuisineChip({required this.name, required this.icon});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          child: Icon(icon, size: 28, color: theme.colorScheme.primary),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          name,
-          style: theme.textTheme.labelSmall,
-          textAlign: TextAlign.center,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
     );
   }
 }
