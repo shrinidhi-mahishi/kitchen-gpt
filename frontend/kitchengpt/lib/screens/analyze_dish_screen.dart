@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../models/food_analysis.dart';
 import '../models/recipe.dart';
-import '../models/restaurant.dart';
 import '../models/youtube_video.dart';
 import '../services/api_service.dart';
 import '../services/camera_service.dart';
 import '../widgets/recipe_card.dart';
-import '../widgets/restaurant_card.dart';
 import '../widgets/youtube_card.dart';
 
 class AnalyzeDishScreen extends StatefulWidget {
@@ -26,16 +24,11 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
   final _apiService = ApiService();
 
   bool _loading = false;
-  bool _loadingRestaurants = false;
   String? _error;
 
   FoodAnalysis? _analysis;
   List<Recipe> _recipes = [];
   List<YouTubeVideo> _youtubeVideos = [];
-  List<Restaurant> _restaurants = [];
-
-  double? _lat;
-  double? _lng;
 
   @override
   void initState() {
@@ -50,25 +43,8 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
       _analysis = null;
       _recipes = [];
       _youtubeVideos = [];
-      _restaurants = [];
       _error = null;
     });
-  }
-
-  Future<void> _ensureLocation() async {
-    if (_lat != null && _lng != null) return;
-    try {
-      final permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied ||
-          permission == LocationPermission.deniedForever) {
-        return;
-      }
-      final pos = await Geolocator.getCurrentPosition(
-          locationSettings:
-              const LocationSettings(accuracy: LocationAccuracy.medium));
-      _lat = pos.latitude;
-      _lng = pos.longitude;
-    } catch (_) {}
   }
 
   Future<void> _onCapturePhoto() async {
@@ -86,7 +62,6 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
       _loading = true;
       _error = null;
       _youtubeVideos = [];
-      _restaurants = [];
     });
 
     try {
@@ -116,7 +91,6 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
       _error = null;
       _analysis = null;
       _youtubeVideos = [];
-      _restaurants = [];
     });
 
     try {
@@ -131,34 +105,6 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
     } finally {
       setState(() => _loading = false);
     }
-  }
-
-  Future<void> _onFindRestaurants(String dishName) async {
-    setState(() {
-      _loadingRestaurants = true;
-      _error = null;
-    });
-
-    await _ensureLocation();
-
-    try {
-      final results = await _apiService.nearbyRestaurants(
-        dishName: dishName,
-        latitude: _lat,
-        longitude: _lng,
-      );
-      setState(() => _restaurants = results);
-    } catch (e) {
-      setState(() => _error = 'Restaurant search failed: $e');
-    } finally {
-      setState(() => _loadingRestaurants = false);
-    }
-  }
-
-  String? get _dishNameForGeo {
-    if (_analysis != null) return _analysis!.dishName;
-    if (_recipes.isNotEmpty) return _recipes.first.title;
-    return null;
   }
 
   @override
@@ -184,7 +130,7 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
         ),
 
         SizedBox(
-          height: 160,
+          height: 140,
           child: TabBarView(
             controller: _tabCtrl,
             children: [
@@ -197,12 +143,20 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                       onPressed: _loading ? null : _onCapturePhoto,
                       icon: const Icon(Icons.camera_alt),
                       label: const Text('Take Photo'),
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 14),
+                      ),
                     ),
                     const SizedBox(width: 16),
                     OutlinedButton.icon(
                       onPressed: _loading ? null : _onPickGallery,
                       icon: const Icon(Icons.photo_library),
                       label: const Text('Gallery'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 14),
+                      ),
                     ),
                   ],
                 ),
@@ -215,10 +169,13 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                     Expanded(
                       child: TextField(
                         controller: _ingredientsCtrl,
-                        decoration: const InputDecoration(
-                          hintText: 'e.g. lemon, rice, tomato',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.search),
+                        decoration: InputDecoration(
+                          hintText: 'e.g. paneer, tomato, onion',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
                         ),
                         onSubmitted: (_) => _onSearchIngredients(),
                       ),
@@ -226,6 +183,10 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                     const SizedBox(width: 8),
                     FilledButton(
                       onPressed: _loading ? null : _onSearchIngredients,
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 16),
+                      ),
                       child: const Text('Search'),
                     ),
                   ],
@@ -235,15 +196,42 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
           ),
         ),
 
+        // Loading shimmer
         if (_loading)
-          const Padding(
-            padding: EdgeInsets.all(24),
-            child: Column(
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 12),
-                Text('Analyzing...'),
-              ],
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Shimmer.fromColors(
+                baseColor: theme.colorScheme.surfaceContainerHighest,
+                highlightColor: theme.colorScheme.surface,
+                child: Column(
+                  children: [
+                    Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Container(
+                      height: 180,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ),
 
@@ -254,9 +242,18 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
               color: theme.colorScheme.errorContainer,
               child: Padding(
                 padding: const EdgeInsets.all(12),
-                child: Text(_error!,
-                    style:
-                        TextStyle(color: theme.colorScheme.onErrorContainer)),
+                child: Row(
+                  children: [
+                    Icon(Icons.error_outline,
+                        color: theme.colorScheme.onErrorContainer),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(_error!,
+                          style: TextStyle(
+                              color: theme.colorScheme.onErrorContainer)),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -273,7 +270,9 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                   if (_recipes.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     Text('Matching Recipes',
-                        style: theme.textTheme.titleMedium),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        )),
                     const SizedBox(height: 8),
                     ..._recipes.map((r) => RecipeCard(recipe: r)),
                   ],
@@ -281,7 +280,9 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                   if (_youtubeVideos.isNotEmpty) ...[
                     const SizedBox(height: 20),
                     Text('Watch on YouTube',
-                        style: theme.textTheme.titleMedium),
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        )),
                     const SizedBox(height: 8),
                     SizedBox(
                       height: 240,
@@ -295,28 +296,29 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                     ),
                   ],
 
-                  if (_recipes.isNotEmpty && _restaurants.isEmpty) ...[
-                    const SizedBox(height: 20),
+                  if (_recipes.isEmpty &&
+                      _analysis == null &&
+                      _youtubeVideos.isEmpty &&
+                      _error == null)
                     Center(
-                      child: _loadingRestaurants
-                          ? const CircularProgressIndicator()
-                          : OutlinedButton.icon(
-                              onPressed: _dishNameForGeo != null
-                                  ? () => _onFindRestaurants(_dishNameForGeo!)
-                                  : null,
-                              icon: const Icon(Icons.location_on),
-                              label: const Text('Find Nearby Restaurants'),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(height: 40),
+                          Icon(Icons.restaurant_menu,
+                              size: 64,
+                              color: theme.colorScheme.outlineVariant),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Take a photo or search ingredients\nto get started',
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
                             ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-
-                  if (_restaurants.isNotEmpty) ...[
-                    const SizedBox(height: 20),
-                    Text('Nearby Restaurants',
-                        style: theme.textTheme.titleMedium),
-                    const SizedBox(height: 8),
-                    ..._restaurants.map((r) => RestaurantCard(restaurant: r)),
-                  ],
                 ],
               ),
             ),
@@ -328,7 +330,8 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
   Widget _buildAnalysisCard(ThemeData theme) {
     final a = _analysis!;
     return Card(
-      elevation: 3,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -341,29 +344,60 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                       style: theme.textTheme.headlineSmall
                           ?.copyWith(fontWeight: FontWeight.bold)),
                 ),
-                Chip(
-                  avatar: const Icon(Icons.verified, size: 16),
-                  label: Text('${(a.confidence * 100).toStringAsFixed(0)}%'),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.verified,
+                          size: 16, color: theme.colorScheme.primary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${(a.confidence * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: theme.colorScheme.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            if (a.cuisineType != null) ...[
-              const SizedBox(height: 4),
-              Text(a.cuisineType!,
-                  style: theme.textTheme.bodyMedium
-                      ?.copyWith(color: theme.colorScheme.primary)),
+            if (a.cuisineType != null && a.cuisineType!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.tertiaryContainer,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(a.cuisineType!,
+                    style: theme.textTheme.labelMedium?.copyWith(
+                      color: theme.colorScheme.onTertiaryContainer,
+                      fontWeight: FontWeight.w600,
+                    )),
+              ),
             ],
-            const SizedBox(height: 8),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Icon(Icons.local_fire_department,
                     size: 18, color: Colors.orange.shade700),
                 const SizedBox(width: 4),
                 Text('~${a.caloriesEstimate} kcal',
-                    style: theme.textTheme.bodyMedium),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    )),
               ],
             ),
-            const SizedBox(height: 12),
+            const Divider(height: 20),
             Wrap(
               spacing: 6,
               runSpacing: 4,
@@ -371,6 +405,9 @@ class _AnalyzeDishScreenState extends State<AnalyzeDishScreen>
                   .map((i) => Chip(
                         label: Text(i, style: const TextStyle(fontSize: 12)),
                         visualDensity: VisualDensity.compact,
+                        side: BorderSide.none,
+                        backgroundColor:
+                            theme.colorScheme.surfaceContainerHighest,
                       ))
                   .toList(),
             ),

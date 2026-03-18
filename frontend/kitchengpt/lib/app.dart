@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 
 class KitchenGPTApp extends StatelessWidget {
   const KitchenGPTApp({super.key});
+
+  static const _saffron = Color(0xFFE65100);
+
+  Future<bool> _isOnboardingComplete() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('onboarding_complete') ?? false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -11,17 +20,30 @@ class KitchenGPTApp extends StatelessWidget {
       title: 'KitchenGPT',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF4CAF50),
+        colorSchemeSeed: _saffron,
         useMaterial3: true,
         brightness: Brightness.light,
       ),
       darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF4CAF50),
+        colorSchemeSeed: _saffron,
         useMaterial3: true,
         brightness: Brightness.dark,
       ),
       themeMode: ThemeMode.system,
-      home: const HomeScreen(),
+      home: FutureBuilder<bool>(
+        future: _isOnboardingComplete(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          if (snapshot.data == true) {
+            return const HomeScreen();
+          }
+          return const OnboardingScreen();
+        },
+      ),
     );
   }
 }
