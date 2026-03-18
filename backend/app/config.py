@@ -32,7 +32,7 @@ class Settings(BaseSettings):
 
     # --- Google Places ---
     places_base_url: str = "https://places.googleapis.com/v1"
-    places_search_radius: int = 5000
+    places_search_radius: int = 3000
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
