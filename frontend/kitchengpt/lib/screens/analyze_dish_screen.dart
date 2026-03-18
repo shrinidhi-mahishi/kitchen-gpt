@@ -248,41 +248,36 @@ class AnalyzeDishScreenState extends State<AnalyzeDishScreen>
           ),
         ),
 
-        // Loading shimmer
         if (_loading)
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Shimmer.fromColors(
-                baseColor: theme.colorScheme.surfaceContainerHighest,
-                highlightColor: theme.colorScheme.surface,
-                child: Column(
-                  children: [
-                    Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 80,
+                    height: 80,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      color: theme.colorScheme.primary,
                     ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Cooking up results...',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
                     ),
-                    const SizedBox(height: 16),
-                    Container(
-                      height: 180,
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'This may take 15-30 seconds',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
