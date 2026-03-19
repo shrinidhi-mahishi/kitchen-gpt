@@ -72,7 +72,7 @@ async def search_nearby_restaurants(
 
     body = {
         "textQuery": f"{dish_name} restaurant",
-        "locationRestriction": {
+        "locationBias": {
             "circle": {
                 "center": {
                     "latitude": latitude,
@@ -81,6 +81,7 @@ async def search_nearby_restaurants(
                 "radius": float(radius),
             }
         },
+        "rankPreference": "DISTANCE",
         "maxResultCount": 10,
     }
 
