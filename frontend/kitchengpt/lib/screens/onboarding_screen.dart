@@ -34,21 +34,21 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Snap a Dish',
       subtitle:
           'Take a photo of any dish and our AI will identify it, list the ingredients, and estimate calories instantly.',
-      iconBgColor: Color(0xFFE65100),
+      iconBgColor: Color(0xFF00BCD4),
     ),
     _OnboardingPage(
       icon: Icons.restaurant_menu_rounded,
       title: 'Get Indian Recipes',
       subtitle:
           'Search by ingredients you have at home and get authentic step-by-step Indian recipes across all regional cuisines.',
-      iconBgColor: Color(0xFFC62828),
+      iconBgColor: Color(0xFF7C4DFF),
     ),
     _OnboardingPage(
       icon: Icons.explore_rounded,
       title: 'Discover & Watch',
       subtitle:
           'Find nearby restaurants serving your favourite dishes and watch related YouTube cooking videos.',
-      iconBgColor: Color(0xFF1565C0),
+      iconBgColor: Color(0xFF00E5FF),
     ),
   ];
 
