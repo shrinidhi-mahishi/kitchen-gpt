@@ -1,7 +1,7 @@
 name: kitchengpt
 description: AI-powered food analysis, recipe discovery, and nearby restaurant search.
 publish_to: "none"
-version: 0.4.1+16
+version: 0.4.2+17
 
 environment:
   sdk: ">=3.2.0 <4.0.0"

@@ -7,7 +7,28 @@ import 'screens/onboarding_screen.dart';
 class KitchenGPTApp extends StatelessWidget {
   const KitchenGPTApp({super.key});
 
-  static const _seedColor = Color(0xFF00BCD4);
+  static const _scheme = ColorScheme.dark(
+    brightness: Brightness.dark,
+    primary: Color(0xFF00E5FF),
+    onPrimary: Colors.black,
+    primaryContainer: Color(0xFF004D5A),
+    onPrimaryContainer: Color(0xFF80F0FF),
+    secondary: Color(0xFFBB86FC),
+    onSecondary: Colors.black,
+    secondaryContainer: Color(0xFF3D1F6E),
+    onSecondaryContainer: Color(0xFFE2CFFF),
+    tertiary: Color(0xFF03DAC6),
+    onTertiary: Colors.black,
+    tertiaryContainer: Color(0xFF004D40),
+    onTertiaryContainer: Color(0xFF80EDE4),
+    error: Color(0xFFCF6679),
+    surface: Color(0xFF000000),
+    onSurface: Color(0xFFE6E6E6),
+    onSurfaceVariant: Color(0xFF9E9E9E),
+    outline: Color(0xFF444444),
+    outlineVariant: Color(0xFF2A2A2A),
+    surfaceContainerHighest: Color(0xFF1A1A1A),
+  );
 
   Future<bool> _isOnboardingComplete() async {
     final prefs = await SharedPreferences.getInstance();
@@ -20,12 +41,12 @@ class KitchenGPTApp extends StatelessWidget {
       title: 'KitchenGPT',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorSchemeSeed: _seedColor,
+        colorScheme: _scheme,
         useMaterial3: true,
-        brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
         navigationBarTheme: const NavigationBarThemeData(
-          backgroundColor: Color(0xFF0A0A0A),
+          backgroundColor: Color(0xFF050505),
+          indicatorColor: Color(0xFF004D5A),
         ),
         appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black,
@@ -39,6 +60,26 @@ class KitchenGPTApp extends StatelessWidget {
             borderRadius: BorderRadius.circular(16),
           ),
         ),
+        filledButtonTheme: FilledButtonThemeData(
+          style: FilledButton.styleFrom(
+            backgroundColor: const Color(0xFF00E5FF),
+            foregroundColor: Colors.black,
+          ),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          fillColor: const Color(0xFF111111),
+          filled: true,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Color(0xFF333333)),
+          ),
+        ),
+        dividerColor: const Color(0xFF222222),
+        chipTheme: ChipThemeData(
+          backgroundColor: const Color(0xFF1A1A1A),
+          side: BorderSide.none,
+          labelStyle: const TextStyle(color: Color(0xFFCCCCCC)),
+        ),
       ),
       themeMode: ThemeMode.dark,
       home: FutureBuilder<bool>(
@@ -47,7 +88,9 @@ class KitchenGPTApp extends StatelessWidget {
           if (!snapshot.hasData) {
             return const Scaffold(
               backgroundColor: Colors.black,
-              body: Center(child: CircularProgressIndicator()),
+              body: Center(
+                child: CircularProgressIndicator(color: Color(0xFF00E5FF)),
+              ),
             );
           }
           if (snapshot.data == true) {
