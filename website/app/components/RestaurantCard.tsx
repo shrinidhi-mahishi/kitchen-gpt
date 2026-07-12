@@ -7,21 +7,25 @@ function ratingColor(rating: number | null): string {
   return "#C62828";
 }
 
-export default function RestaurantCard({ restaurant }: { restaurant: Restaurant }) {
+export default function RestaurantCard({
+  restaurant,
+}: {
+  restaurant: Restaurant;
+}) {
   return (
-    <div className="p-4 rounded-2xl bg-[#111] border border-[#222] mb-3 flex items-center gap-4">
-      <div className="w-12 h-12 rounded-xl bg-[#1a1a1a] flex items-center justify-center text-xl shrink-0">
+    <div className="mb-3 flex items-center gap-4 rounded-2xl border border-[#222] bg-[#111] p-4">
+      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#03DAC6]/10 text-xl">
         🏪
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold truncate">{restaurant.name}</p>
-        <p className="text-sm text-[#9E9E9E] truncate">{restaurant.address}</p>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-semibold">{restaurant.name}</p>
+        <p className="truncate text-sm text-[#9E9E9E]">{restaurant.address}</p>
         {restaurant.rating != null && (
           <span
-            className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded text-xs font-bold text-white"
+            className="mt-1 inline-flex items-center gap-1 rounded px-2 py-0.5 text-xs font-bold text-white"
             style={{ backgroundColor: ratingColor(restaurant.rating) }}
           >
-            ⭐ {restaurant.rating.toFixed(1)}
+            {restaurant.rating.toFixed(1)}
           </span>
         )}
       </div>
@@ -30,7 +34,7 @@ export default function RestaurantCard({ restaurant }: { restaurant: Restaurant 
           href={restaurant.google_maps_uri}
           target="_blank"
           rel="noopener noreferrer"
-          className="px-3 py-2 rounded-lg bg-[#00E5FF]/10 text-[#00E5FF] text-sm font-semibold hover:bg-[#00E5FF]/20 transition shrink-0"
+          className="shrink-0 rounded-lg bg-[#00E5FF]/10 px-3 py-2 text-sm font-semibold text-[#00E5FF] transition hover:bg-[#00E5FF]/20"
         >
           Navigate
         </a>

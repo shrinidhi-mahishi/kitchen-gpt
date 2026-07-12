@@ -52,6 +52,18 @@ export interface RecipeSearchResponse {
   youtube_videos: YouTubeVideo[];
 }
 
+async function parseError(res: Response): Promise<string> {
+  const err = await res.json().catch(() => ({ detail: res.statusText }));
+  const detail = err?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) {
+    return detail
+      .map((d) => (typeof d === "string" ? d : d?.msg || JSON.stringify(d)))
+      .join("; ");
+  }
+  return `Error ${res.status}`;
+}
+
 export async function analyzeDish(file: File): Promise<DishAnalysisResponse> {
   const formData = new FormData();
   formData.append("image", file);
@@ -61,11 +73,7 @@ export async function analyzeDish(file: File): Promise<DishAnalysisResponse> {
     body: formData,
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Error ${res.status}`);
-  }
-
+  if (!res.ok) throw new Error(await parseError(res));
   return res.json();
 }
 
@@ -78,11 +86,7 @@ export async function recipesByIngredients(
     body: JSON.stringify({ ingredients }),
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Error ${res.status}`);
-  }
-
+  if (!res.ok) throw new Error(await parseError(res));
   return res.json();
 }
 
@@ -101,10 +105,25 @@ export async function nearbyRestaurants(
     body: JSON.stringify(body),
   });
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || `Error ${res.status}`);
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json();
+}
+
+export async function getCurrentPosition(): Promise<{
+  lat?: number;
+  lng?: number;
+}> {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    return {};
   }
 
-  return res.json();
+  const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+    navigator.geolocation.getCurrentPosition(resolve, reject, {
+      timeout: 8000,
+      maximumAge: 60_000,
+    })
+  ).catch(() => null);
+
+  if (!pos) return {};
+  return { lat: pos.coords.latitude, lng: pos.coords.longitude };
 }

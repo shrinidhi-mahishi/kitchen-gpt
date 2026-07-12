@@ -141,6 +141,9 @@ async def nearby_restaurants(
             client,
             radius_meters=body.radius_meters,
         )
+    except PermissionError as exc:
+        logger.exception("Geo search permission denied")
+        raise HTTPException(status_code=403, detail=str(exc))
     except Exception as exc:
         logger.exception("Geo search failed")
         raise HTTPException(status_code=502, detail=f"Places API error: {exc}")

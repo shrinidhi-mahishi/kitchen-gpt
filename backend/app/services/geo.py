@@ -85,7 +85,25 @@ async def search_nearby_restaurants(
         "maxResultCount": 10,
     }
 
+    if not settings.google_api_key:
+        raise PermissionError(
+            "GOOGLE_API_KEY is not configured. Add it to enable nearby restaurants."
+        )
+
     resp = await client.post(url, json=body, headers=headers)
+    if resp.status_code == 403:
+        detail = ""
+        try:
+            detail = resp.json().get("error", {}).get("message", "")
+        except Exception:
+            detail = resp.text[:200]
+        raise PermissionError(
+            "Places API (New) is not enabled or this API key is blocked. "
+            "In Google Cloud Console → APIs & Services → enable "
+            "'Places API (New)' for the same project as GOOGLE_API_KEY, "
+            "ensure billing is active, and allow Places API (New) on the key. "
+            f"Google said: {detail or 'PERMISSION_DENIED'}"
+        )
     resp.raise_for_status()
 
     data = resp.json()
