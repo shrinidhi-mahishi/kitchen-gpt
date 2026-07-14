@@ -124,13 +124,14 @@ async def nearby_restaurants(
 
     if lat is None or lng is None:
         try:
-            client_ip = request.client.host if request.client else None
+            client_ip = _extract_client_ip(request)
+            logger.info("Nearby search without coords; resolving IP %s", client_ip)
             lat, lng = await geo.geolocate_by_ip(client, client_ip)
         except Exception as exc:
             logger.warning("IP geolocation failed: %s", exc)
             raise HTTPException(
                 status_code=422,
-                detail="Could not auto-detect location. Please provide latitude and longitude.",
+                detail="Could not detect location. Please enable browser/device location and try again.",
             )
 
     try:
@@ -152,6 +153,21 @@ async def nearby_restaurants(
 # --------------------------------------------------------------------------- #
 #  Helpers
 # --------------------------------------------------------------------------- #
+def _extract_client_ip(request: Request) -> str | None:
+    """Best-effort client IP behind Render/Cloudflare proxies."""
+    for header in ("cf-connecting-ip", "x-real-ip"):
+        value = request.headers.get(header)
+        if value:
+            return value.strip()
+
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        # First hop is the original client.
+        return forwarded.split(",")[0].strip()
+
+    return request.client.host if request.client else None
+
+
 async def _safe_generate_recipes(ingredients: list[str]):
     try:
         return await recipe.generate_recipes(ingredients)

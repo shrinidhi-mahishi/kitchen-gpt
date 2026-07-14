@@ -109,21 +109,61 @@ export async function nearbyRestaurants(
   return res.json();
 }
 
+export class LocationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "LocationError";
+  }
+}
+
+/** Requires browser GPS. Throws LocationError if denied/unavailable. */
 export async function getCurrentPosition(): Promise<{
-  lat?: number;
-  lng?: number;
+  lat: number;
+  lng: number;
 }> {
-  if (typeof navigator === "undefined" || !navigator.geolocation) {
-    return {};
+  if (typeof window === "undefined" || !navigator.geolocation) {
+    throw new LocationError(
+      "Location is not supported in this browser. Please use Chrome or Safari."
+    );
   }
 
-  const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
-    navigator.geolocation.getCurrentPosition(resolve, reject, {
-      timeout: 8000,
-      maximumAge: 60_000,
-    })
-  ).catch(() => null);
+  if (!window.isSecureContext) {
+    throw new LocationError(
+      "Location requires HTTPS. Open the site via https:// and try again."
+    );
+  }
 
-  if (!pos) return {};
-  return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, {
+        enableHighAccuracy: true,
+        timeout: 20000,
+        maximumAge: 0,
+      })
+    );
+    return { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  } catch (err) {
+    const code =
+      err && typeof err === "object" && "code" in err
+        ? Number((err as GeolocationPositionError).code)
+        : null;
+    if (code === 1) {
+      throw new LocationError(
+        "Location permission denied. Allow location for this site in your browser settings, then try again."
+      );
+    }
+    if (code === 2) {
+      throw new LocationError(
+        "Location unavailable. Turn on device location services and try again."
+      );
+    }
+    if (code === 3) {
+      throw new LocationError(
+        "Location timed out. Move to an open area and try again."
+      );
+    }
+    throw new LocationError(
+      "Could not get your current location. Please allow location access and try again."
+    );
+  }
 }

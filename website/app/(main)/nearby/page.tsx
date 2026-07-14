@@ -16,7 +16,7 @@ export default function NearbyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [usedLocation, setUsedLocation] = useState(false);
+  const [locationLabel, setLocationLabel] = useState<string | null>(null);
 
   async function handleSearch(dish?: string) {
     const dishName = (dish ?? query).trim();
@@ -26,15 +26,15 @@ export default function NearbyPage() {
     setLoading(true);
     setError(null);
     setRestaurants([]);
-    setUsedLocation(false);
+    setLocationLabel(null);
 
     try {
       const { lat, lng } = await getCurrentPosition();
-      setUsedLocation(lat != null && lng != null);
+      setLocationLabel(`${lat.toFixed(3)}, ${lng.toFixed(3)}`);
       const data = await nearbyRestaurants(dishName, lat, lng);
       setRestaurants(data ?? []);
       if (!data?.length) {
-        setError("No restaurants found. Try another dish name.");
+        setError("No restaurants found near your location. Try another dish name.");
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Search failed");
@@ -50,7 +50,7 @@ export default function NearbyPage() {
           Find nearby restaurants
         </h1>
         <p className="mt-2 text-[#9E9E9E]">
-          Search by dish name. We&apos;ll use your location when available.
+          Uses your device GPS. Allow location when the browser asks.
         </p>
       </div>
 
@@ -86,7 +86,9 @@ export default function NearbyPage() {
         ))}
       </div>
 
-      {loading && <LoadingSpinner message="Searching nearby restaurants..." />}
+      {loading && (
+        <LoadingSpinner message="Getting your location & searching nearby..." />
+      )}
 
       {error && (
         <div className="rounded-xl border border-red-800 bg-red-900/20 p-4 text-red-300">
@@ -103,7 +105,7 @@ export default function NearbyPage() {
             Search for a dish nearby
           </p>
           <p className="mt-2 text-sm text-[#666]">
-            Allow location access for the most accurate results
+            Your browser will ask for location access
           </p>
         </div>
       )}
@@ -112,8 +114,8 @@ export default function NearbyPage() {
         <div>
           <p className="mb-4 text-sm text-[#9E9E9E]">
             {restaurants.length} restaurant
-            {restaurants.length === 1 ? "" : "s"} found
-            {usedLocation ? " near you" : " (using IP location fallback)"}
+            {restaurants.length === 1 ? "" : "s"} near you
+            {locationLabel ? ` (${locationLabel})` : ""}
           </p>
           {restaurants.map((r, i) => (
             <RestaurantCard key={`${r.name}-${i}`} restaurant={r} />

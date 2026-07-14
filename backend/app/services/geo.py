@@ -28,11 +28,22 @@ async def geolocate_by_ip(
     private/loopback address the API returns the server's public IP
     location, which is a reasonable fallback for development.
     """
-    url = (
-        f"http://ip-api.com/json/{client_ip}"
-        if client_ip and not client_ip.startswith(("127.", "10.", "192.168.", "::1"))
-        else "http://ip-api.com/json/"
-    )
+    def _is_private(ip: str) -> bool:
+        if ip in {"::1", "localhost"}:
+            return True
+        if ip.startswith(("127.", "10.", "192.168.", "169.254.")):
+            return True
+        # RFC1918 172.16.0.0/12 (common on cloud proxies)
+        if ip.startswith("172."):
+            try:
+                second = int(ip.split(".")[1])
+                return 16 <= second <= 31
+            except (IndexError, ValueError):
+                return False
+        return False
+
+    use_ip = client_ip and not _is_private(client_ip)
+    url = f"http://ip-api.com/json/{client_ip}" if use_ip else "http://ip-api.com/json/"
 
     resp = await client.get(url, timeout=5.0)
     resp.raise_for_status()

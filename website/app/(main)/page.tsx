@@ -128,7 +128,7 @@ export default function CookPage() {
       const data = await nearbyRestaurants(dishName, lat, lng);
       setRestaurants(data ?? []);
       if (!data?.length) {
-        setError("No nearby restaurants found for this dish.");
+        setError("No nearby restaurants found for this dish near your location.");
       }
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Restaurant search failed");
